@@ -30,7 +30,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    const ticks = [7, 14, 21, 28, 35];
+    const ticks = [
+      Tick(value: 7, label: Text('7')),
+      Tick(value: 14, label: Text('14')),
+      Tick(value: 21, label: Text('21')),
+      Tick(value: 28, label: Text('28')),
+      Tick(value: 35, label: Text('35')),
+    ];
+
     var features = ["AA", "BB", "CC", "DD", "EE", "FF", "GG", "HH"];
     var data = [
       [10.0, 20, 28, 5, 16, 15, 17, 6],
@@ -38,9 +45,18 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     features = features.sublist(0, numberOfFeatures.floor());
-    data = data
-        .map((graph) => graph.sublist(0, numberOfFeatures.floor()))
-        .toList();
+    data = data.map((graph) => graph.sublist(0, numberOfFeatures.floor())).toList();
+
+    // Convert features to RadarFeature objects
+    var radarFeatures = features.map((feature) => RadarFeature(
+      label: Text(feature),
+      value: data[0][features.indexOf(feature)],
+    )).toList();
+
+    var radarFeatures2 = features.map((feature) => RadarFeature(
+      label: Text(feature),
+      value: data[1][features.indexOf(feature)],
+    )).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -49,104 +65,125 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Container(
         color: darkMode ? Colors.black : Colors.white,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          children: [
+            // Controls
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  darkMode
-                      ? Text(
-                          'Light mode',
-                          style: TextStyle(color: Colors.white),
-                        )
-                      : Text(
-                          'Dark mode',
-                          style: TextStyle(color: Colors.black),
-                        ),
-                  Switch(
-                    value: this.darkMode,
-                    onChanged: (value) {
-                      setState(() {
-                        darkMode = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  useSides
-                      ? Text(
-                          'Polygon border',
-                          style: darkMode
-                              ? TextStyle(color: Colors.white)
-                              : TextStyle(color: Colors.black),
-                        )
-                      : Text(
-                          'Circular border',
-                          style: darkMode
-                              ? TextStyle(color: Colors.white)
-                              : TextStyle(color: Colors.black),
-                        ),
-                  Switch(
-                    value: this.useSides,
-                    onChanged: (value) {
-                      setState(() {
-                        useSides = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
                   Text(
-                    'Number of features',
-                    style: TextStyle(
-                        color: darkMode ? Colors.white : Colors.black),
+                    darkMode ? 'Light mode' : 'Dark mode',
+                    style: TextStyle(color: darkMode ? Colors.white : Colors.black),
+                  ),
+                  Switch(
+                    value: darkMode,
+                    onChanged: (value) => setState(() => darkMode = value),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Features: ${numberOfFeatures.floor()}',
+                    style: TextStyle(color: darkMode ? Colors.white : Colors.black),
+                  ),
+                  Slider(
+                    value: numberOfFeatures,
+                    min: 3,
+                    max: 8,
+                    divisions: 5,
+                    onChanged: (value) => setState(() => numberOfFeatures = value),
+                  ),
+                ],
+              ),
+            ),
+            // Charts row
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Chart 1',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: darkMode ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: darkMode
+                              ? RadarChart.dark(
+                                  ticks: ticks,
+                                  dataSets: [
+                                    RadarDataSet(
+                                      features: radarFeatures,
+                                      color: Colors.blue,
+                                    ),
+                                  ],
+                                  reverseAxis: true,
+                                  useSides: useSides,
+                                )
+                              : RadarChart.light(
+                                  ticks: ticks,
+                                  dataSets: [
+                                    RadarDataSet(
+                                      features: radarFeatures,
+                                      color: Colors.blue,
+                                    ),
+                                  ],
+                                  reverseAxis: true,
+                                  useSides: useSides,
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                   Expanded(
-                    child: Slider(
-                      value: this.numberOfFeatures,
-                      min: 3,
-                      max: 8,
-                      divisions: 5,
-                      onChanged: (value) {
-                        setState(() {
-                          numberOfFeatures = value;
-                        });
-                      },
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Chart 2',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: darkMode ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: darkMode
+                              ? RadarChart.dark(
+                                  ticks: ticks,
+                                  dataSets: [
+                                    RadarDataSet(
+                                      features: radarFeatures2,
+                                      color: Colors.red,
+                                    ),
+                                  ],
+                                  reverseAxis: true,
+                                  useSides: useSides,
+                                )
+                              : RadarChart.light(
+                                  ticks: ticks,
+                                  dataSets: [
+                                    RadarDataSet(
+                                      features: radarFeatures2,
+                                      color: Colors.red,
+                                    ),
+                                  ],
+                                  reverseAxis: true,
+                                  useSides: useSides,
+                                ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-            Expanded(
-              child: darkMode
-                  ? RadarChart.dark(
-                      ticks: ticks,
-                      features: features,
-                      data: data,
-                      reverseAxis: true,
-                      useSides: useSides,
-                    )
-                  : RadarChart.light(
-                      ticks: ticks,
-                      features: features,
-                      data: data,
-                      reverseAxis: true,
-                      useSides: useSides,
-                    ),
             ),
           ],
         ),
